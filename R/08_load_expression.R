@@ -23,7 +23,7 @@ load_expression <- function(file, genome = NULL) {
     sep = "\t",
     header = FALSE,
     comment.char = "#",
-    colClasses = c("character", "integer", "numeric")
+    colClasses = c("character", "numeric", "numeric")
   )
 
   stopifnot(
