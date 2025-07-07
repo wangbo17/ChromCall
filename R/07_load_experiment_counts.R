@@ -20,13 +20,13 @@
 #' genome_file <- system.file("extdata", "genome.txt", package = "chromcall")
 #' genome <- load_genome(genome_file)
 #'
-#' # Load blacklist
-#' blacklist_file <- system.file("extdata", "blacklist.bed", package = "chromcall")
-#' blacklist <- load_bedfile(blacklist_file, genome = genome)
-#'
 #' # Create genome tiles (e.g., 10kb)
 #' tiles <- tile_genome(genome, window_size = 10000)
 #' tiles_with_bl <- tile_genome(genome, window_size = 10000, blacklist = blacklist)
+#'
+#' # Load blacklist
+#' blacklist_file <- system.file("extdata", "blacklist.bed", package = "chromcall")
+#' blacklist <- load_bedfile(blacklist_file, genome = genome)
 #'
 #' # Load promoter regions and annotate blacklist overlaps
 #' promoter_file <- system.file("extdata", "example.bed", package = "chromcall")
@@ -45,6 +45,7 @@
 #'
 #' @export
 load_experiment_counts <- function(file, genome_tiles, regions) {
+
   count_reads <- function(reads, targets) {
     targets$counts <- GenomicRanges::countOverlaps(targets, reads)
     targets

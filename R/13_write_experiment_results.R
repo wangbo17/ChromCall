@@ -56,12 +56,15 @@ write_experiment_results <- function(x, experiment_name, file, alpha = 1e-5) {
 
   gr <- SummarizedExperiment::rowRanges(x)
 
+  # Add core columns
   GenomicRanges::mcols(gr)$counts_control <-
     SummarizedExperiment::assays(x)$counts[, S4Vectors::metadata(x)$control_name]
   GenomicRanges::mcols(gr)$counts_experiment <-
     SummarizedExperiment::assays(x)$counts[, experiment_name]
   GenomicRanges::mcols(gr)$logFC <-
     SummarizedExperiment::assays(x)$logFC[, experiment_name]
+  GenomicRanges::mcols(gr)$score <-
+    SummarizedExperiment::assays(x)$score[, experiment_name]
   GenomicRanges::mcols(gr)$modification_factor <-
     SummarizedExperiment::rowData(x)$modification_factor
   GenomicRanges::mcols(gr)$test_lambda <-
@@ -76,26 +79,24 @@ write_experiment_results <- function(x, experiment_name, file, alpha = 1e-5) {
     levels = c("ns", "sig")
   )
 
+  # Convert to data.frame
   df <- as.data.frame(gr, row.names = NULL)
   df$strand <- NULL
 
+  # Define columns to export
+  base_cols <- c(
+    "seqnames", "start", "end", "width",
+    "counts_control", "counts_experiment", "logFC", "score",
+    "modification_factor", "test_lambda", "pvalue", "padj"
+  )
+
   if ("expression" %in% colnames(df)) {
-    df <- df[, c(
-      "seqnames", "start", "end", "width",
-      "counts_control", "counts_experiment", "logFC",
-      "modification_factor", "test_lambda", "pvalue", "padj",
-      "expression",  # Include expression if present
-      "significant"
-    )]
+    df <- df[, c(base_cols, "expression", "significant")]
   } else {
-    df <- df[, c(
-      "seqnames", "start", "end", "width",
-      "counts_control", "counts_experiment", "logFC",
-      "modification_factor", "test_lambda", "pvalue", "padj",
-      "significant"
-    )]
+    df <- df[, c(base_cols, "significant")]
   }
 
+  # Write to file
   utils::write.table(df, file = file, sep = "\t", col.names = TRUE,
                      row.names = FALSE, quote = FALSE)
 

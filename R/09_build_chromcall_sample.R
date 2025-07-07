@@ -72,19 +72,19 @@ build_chromcall_sample <- function(
   }
 
   genome_tiles <- tile_genome(genome, window_size = window_size, blacklist = blacklist)
-  promoters <- load_windows(region_file, genome = genome, blacklist = blacklist)
+  regions <- load_windows(region_file, genome = genome, blacklist = blacklist)
 
   if (!is.null(expression_file)) {
     exprs <- load_expression(expression_file, genome)
 
     overlaps <- GenomicRanges::findOverlaps(
-      query = GenomicRanges::resize(promoters, width = 1, fix = "center"),
+      query = GenomicRanges::resize(regions, width = 1, fix = "center"),
       subject = exprs
     )
 
-    S4Vectors::mcols(promoters)$expression <- 0
+    S4Vectors::mcols(regions)$expression <- 0
 
-    S4Vectors::mcols(promoters)[
+    S4Vectors::mcols(regions)[
       S4Vectors::queryHits(overlaps), "expression"
     ] <- exprs[S4Vectors::subjectHits(overlaps)]$expression
   }
@@ -93,7 +93,7 @@ build_chromcall_sample <- function(
     experiments,
     load_experiment_counts,
     genome_tiles = genome_tiles,
-    regions = promoters
+    regions = regions
   )
 
   experiment_metadata <- S4Vectors::DataFrame(
@@ -105,7 +105,7 @@ build_chromcall_sample <- function(
   count_matrix <- do.call(cbind, lapply(experiment_counts, function(x) x$counts))
 
   SummarizedExperiment::SummarizedExperiment(
-    rowRanges = promoters,
+    rowRanges = regions,
     assays = S4Vectors::SimpleList(counts = count_matrix),
     colData = experiment_metadata,
     metadata = list(

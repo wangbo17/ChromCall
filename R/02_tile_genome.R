@@ -36,13 +36,11 @@ tile_genome <- function(genome, window_size, blacklist = NULL) {
     "window_size must be positive" = window_size > 0
   )
 
-
   tiles <- GenomicRanges::tileGenome(
     seqlengths = genome,
     tilewidth = window_size,
     cut.last.tile.in.chrom = TRUE
   )
-
 
   if (!is.null(blacklist) && inherits(blacklist, "GRanges")) {
     tiles$blacklist <- IRanges::overlapsAny(tiles, blacklist)

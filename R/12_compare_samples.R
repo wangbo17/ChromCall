@@ -97,9 +97,7 @@ compare_samples <- function(x, y, experiments = NULL, threshold = 0.05) {
 
     for (exp in experiments) {
       padj <- SummarizedExperiment::assay(s, "p_adj")[, exp]
-      counts <- SummarizedExperiment::assay(s, "counts")[, exp]
-      lambda <- SummarizedExperiment::assay(s, "lambda_t")[, exp]
-      enrichment <- counts / (lambda + 0.01)
+      enrichment <- SummarizedExperiment::assay(s, "score")[, exp]
 
       GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_padj")]] <- padj
       GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_class")]] <- as.numeric(padj <= threshold)
