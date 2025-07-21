@@ -22,8 +22,8 @@ load_read_locations <- function(file) {
     stop("File not found: ", file)
   }
 
-  reads <- GenomicAlignments::readGAlignments(file)
-  gr <- GenomicRanges::GRanges(reads)
+  galp <- GenomicAlignments::readGAlignmentPairs(file)
+  gr <- GenomicRanges::granges(galp)
 
   GenomicRanges::resize(
     gr,
