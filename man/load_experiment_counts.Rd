@@ -4,10 +4,13 @@
 \alias{load_experiment_counts}
 \title{Load Experiment Counts from a BAM File}
 \usage{
-load_experiment_counts(file, genome_tiles, regions)
+load_experiment_counts(file, paired, genome_tiles, regions)
 }
 \arguments{
 \item{file}{Path to the BAM file.}
+
+\item{paired}{Logical. If TRUE (default), input BAM is assumed to be paired-end
+and reads are loaded as fragments. If FALSE, input BAM is treated as single-end.}
 
 \item{genome_tiles}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} object defining genome-wide tiling regions.}
 

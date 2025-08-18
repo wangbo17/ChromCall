@@ -6,6 +6,8 @@
 #'
 #' @param sample_name The name of the sample (string).
 #' @param experiments A named list of BAM file paths for each experiment (e.g., H3K27me3, H3K4me3, control).
+#' @param paired Logical. If TRUE (default), input BAM is assumed to be paired-end
+#'   and reads are loaded as fragments. If FALSE, input BAM is treated as single-end.
 #' @param control_name The name (matching `names(experiments)`) of the experiment to treat as control.
 #' @param genome_file Path to the genome info text file.
 #' @param region_file Path to the promoter BED file.
@@ -52,6 +54,7 @@
 build_chromcall_sample <- function(
     sample_name,
     experiments,
+    paired = TRUE,
     control_name,
     genome_file,
     region_file,
@@ -93,7 +96,8 @@ build_chromcall_sample <- function(
     experiments,
     load_experiment_counts,
     genome_tiles = genome_tiles,
-    regions = regions
+    regions = regions,
+    paired = paired
   )
 
   experiment_metadata <- S4Vectors::DataFrame(

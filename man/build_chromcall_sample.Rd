@@ -7,6 +7,7 @@
 build_chromcall_sample(
   sample_name,
   experiments,
+  paired = TRUE,
   control_name,
   genome_file,
   region_file,
@@ -19,6 +20,9 @@ build_chromcall_sample(
 \item{sample_name}{The name of the sample (string).}
 
 \item{experiments}{A named list of BAM file paths for each experiment (e.g., H3K27me3, H3K4me3, control).}
+
+\item{paired}{Logical. If TRUE (default), input BAM is assumed to be paired-end
+and reads are loaded as fragments. If FALSE, input BAM is treated as single-end.}
 
 \item{control_name}{The name (matching \code{names(experiments)}) of the experiment to treat as control.}
 

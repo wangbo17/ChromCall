@@ -5,6 +5,8 @@
 #' and compute a genomic lambda value representing the background signal.
 #'
 #' @param file Path to the BAM file.
+#' @param paired Logical. If TRUE (default), input BAM is assumed to be paired-end
+#'   and reads are loaded as fragments. If FALSE, input BAM is treated as single-end.
 #' @param genome_tiles A [GenomicRanges::GRanges] object defining genome-wide tiling regions.
 #' @param regions A [GenomicRanges::GRanges] object defining target regions (e.g., promoters). Can include a 'blacklist' column.
 #'
@@ -44,14 +46,14 @@
 #' res$lambda_g   # Estimated lambda background
 #'
 #' @export
-load_experiment_counts <- function(file, genome_tiles, regions) {
+load_experiment_counts <- function(file, paired, genome_tiles, regions) {
 
   count_reads <- function(reads, targets) {
     targets$counts <- GenomicRanges::countOverlaps(targets, reads)
     targets
   }
 
-  reads <- load_read_locations(file)
+  reads <- load_read_locations(file, paired = paired)
 
   tile_counts <- count_reads(reads, genome_tiles)
   region_counts <- count_reads(reads, regions)
