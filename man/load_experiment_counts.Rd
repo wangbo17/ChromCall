@@ -9,7 +9,7 @@ load_experiment_counts(file, paired, genome_tiles, regions)
 \arguments{
 \item{file}{Path to the BAM file.}
 
-\item{paired}{Logical. If TRUE (default), input BAM is assumed to be paired-end
+\item{paired}{Logical. If TRUE, input BAM is assumed to be paired-end
 and reads are loaded as fragments. If FALSE, input BAM is treated as single-end.}
 
 \item{genome_tiles}{A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} object defining genome-wide tiling regions.}
@@ -32,14 +32,13 @@ and compute a genomic lambda value representing the background signal.
 bam_file <- system.file("extdata", "example.bam", package = "chromcall")
 genome_file <- system.file("extdata", "genome.txt", package = "chromcall")
 genome <- load_genome(genome_file)
+# Load blacklist
+blacklist_file <- system.file("extdata", "blacklist.bed", package = "chromcall")
+blacklist <- load_bedfile(blacklist_file, genome = genome)
 
 # Create genome tiles (e.g., 10kb)
 tiles <- tile_genome(genome, window_size = 10000)
 tiles_with_bl <- tile_genome(genome, window_size = 10000, blacklist = blacklist)
-
-# Load blacklist
-blacklist_file <- system.file("extdata", "blacklist.bed", package = "chromcall")
-blacklist <- load_bedfile(blacklist_file, genome = genome)
 
 # Load promoter regions and annotate blacklist overlaps
 promoter_file <- system.file("extdata", "example.bed", package = "chromcall")
@@ -48,6 +47,7 @@ promoters <- load_windows(promoter_file, genome = genome, blacklist = blacklist)
 # Run experiment counts and lambda estimation
 res <- load_experiment_counts(
   file = bam_file,
+  paired = TRUE,
   genome_tiles = tiles_with_bl,
   regions = promoters
 )

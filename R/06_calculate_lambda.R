@@ -6,7 +6,7 @@
 #'
 #' @param x A [GenomicRanges::GRanges] object containing count values and optional metadata.
 #' @param counts_col Character. Column name containing count values. Default is `"counts"`.
-#' @param blacklist_col Character (optional). Logical column indicating blacklisted regions. If NULL, defaults to `"blacklist"` if present.
+#' @param blacklist_col Character (optional). Logical column indicating blacklisted regions.
 #' @param rm_zero Logical. Whether to exclude zero-count regions before summarization. Default is TRUE.
 #' @param summary_fun Function. Summary function to apply (e.g., [mean()], [median()]). Default is [mean()].
 #'

@@ -42,7 +42,8 @@ load_expression <- function(file, genome = NULL) {
     start.field = "tss",
     end.field = "tss",
     keep.extra.columns = TRUE,
-    seqinfo = genome
+    seqinfo = genome,
+    starts.in.df.are.0based = F
   )
 
   return(gr)

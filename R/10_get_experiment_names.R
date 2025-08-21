@@ -44,7 +44,8 @@
 get_experiment_names <- function(x, include_control = FALSE) {
   names <- colnames(x)
   if (!isTRUE(include_control)) {
-    names <- setdiff(names, S4Vectors::metadata(x)$control_name)
+    ctrl <- S4Vectors::metadata(x)$control_name
+    names <- names[names != ctrl]
   }
   names
 }

@@ -40,48 +40,61 @@
 #' head(SummarizedExperiment::rowData(result))    # Region-level info (e.g. modification_factor)
 #'
 #' @export
+#' @export
 test_region_counts <- function(x, trim_blacklist = TRUE) {
-  if (identical(trim_blacklist, TRUE)) {
-    x <- x[!SummarizedExperiment::rowData(x)$blacklist]
+  if (isTRUE(trim_blacklist) && "blacklist" %in% colnames(SummarizedExperiment::rowData(x))) {
+    keep <- !SummarizedExperiment::rowData(x)$blacklist
+    keep[is.na(keep)] <- TRUE
+    x <- x[keep]
     SummarizedExperiment::rowData(x)$blacklist <- NULL
   }
 
-  pseudo <- 0.01
-  counts <- SummarizedExperiment::assays(x)$counts
+  pseudo  <- 0.01
+  counts  <- SummarizedExperiment::assays(x)$counts
+  rn      <- rownames(counts)
+  cn      <- colnames(counts)
+
   control_col <- S4Vectors::metadata(x)$control_name
+  if (!(control_col %in% cn)) {
+    stop("control_name '", control_col, "' not found in colnames(x).")
+  }
   control_counts <- counts[, control_col]
 
-  # Log fold change: sample vs control
   logfc_matrix <- log2((counts + pseudo) / (control_counts + pseudo))
+  dimnames(logfc_matrix) <- list(rn, cn)
 
-  # Modification factor: control sample observed / expected (global lambda)
-  modfac <- counts[, control_col] / SummarizedExperiment::colData(x)[control_col, "lambda_g"]
+  lambda_ctrl <- as.numeric(SummarizedExperiment::colData(x)[control_col, "lambda_g"])
+  if (!is.finite(lambda_ctrl) || lambda_ctrl <= 0) {
+    stop("Control lambda_g must be positive and finite.")
+  }
+  modfac <- control_counts / lambda_ctrl
   modfac[modfac < 1] <- 1
   SummarizedExperiment::rowData(x)$modification_factor <- modfac
 
-  # Adjusted expected lambda per sample
-  lambda_g <- SummarizedExperiment::colData(x)$lambda_g
+  lambda_g <- as.numeric(SummarizedExperiment::colData(x)$lambda_g)
   testlambda_matrix <- do.call(cbind, lapply(lambda_g, function(l) modfac * l))
+  dimnames(testlambda_matrix) <- list(rn, cn)
 
-  # p-value matrix from Poisson test (observed vs expected)
-  pval_matrix <- do.call(cbind, lapply(seq_len(ncol(x)), function(sample_i) {
-    obs <- counts[, sample_i]
-    exp <- testlambda_matrix[, sample_i]
+  pval_matrix <- do.call(cbind, lapply(seq_len(ncol(counts)), function(i) {
+    obs <- counts[, i]
+    exp <- testlambda_matrix[, i]
     vapply(seq_along(obs), function(j) {
       stats::poisson.test(obs[j], exp[j], alternative = "greater")$p.value
     }, numeric(1))
   }))
+  dimnames(pval_matrix) <- list(rn, cn)
+
   padj_matrix <- apply(pval_matrix, 2, stats::p.adjust, method = "fdr")
+  if (is.null(dimnames(padj_matrix))) dimnames(padj_matrix) <- list(rn, cn)
 
-  # Log2 enrichment: observed vs adjusted expected
   enrichment_matrix <- log2((counts + pseudo) / (testlambda_matrix + pseudo))
+  dimnames(enrichment_matrix) <- list(rn, cn)
 
-  # Add all to assays
-  SummarizedExperiment::assays(x, withDimnames = FALSE)$logFC         <- logfc_matrix
-  SummarizedExperiment::assays(x, withDimnames = FALSE)$lambda_t      <- testlambda_matrix
-  SummarizedExperiment::assays(x, withDimnames = FALSE)$p_value       <- pval_matrix
-  SummarizedExperiment::assays(x, withDimnames = FALSE)$p_adj         <- padj_matrix
-  SummarizedExperiment::assays(x, withDimnames = FALSE)$score <- enrichment_matrix
+  SummarizedExperiment::assays(x)$logFC    <- logfc_matrix
+  SummarizedExperiment::assays(x)$lambda_t <- testlambda_matrix
+  SummarizedExperiment::assays(x)$p_value  <- pval_matrix
+  SummarizedExperiment::assays(x)$p_adj    <- padj_matrix
+  SummarizedExperiment::assays(x)$score    <- enrichment_matrix
 
   return(x)
 }

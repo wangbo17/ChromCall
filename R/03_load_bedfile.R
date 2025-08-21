@@ -57,7 +57,7 @@ load_bedfile <- function(file, genome = NULL, reduce = FALSE) {
   gr <- GenomicRanges::makeGRangesFromDataFrame(
     df = bed,
     seqinfo = genome,
-    keep.extra.columns = FALSE
+    starts.in.df.are.0based = F
   )
 
   if (isTRUE(reduce)) {

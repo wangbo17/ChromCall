@@ -17,7 +17,7 @@ calculate_lambda(
 
 \item{counts_col}{Character. Column name containing count values. Default is \code{"counts"}.}
 
-\item{blacklist_col}{Character (optional). Logical column indicating blacklisted regions. If NULL, defaults to \code{"blacklist"} if present.}
+\item{blacklist_col}{Character (optional). Logical column indicating blacklisted regions.}
 
 \item{rm_zero}{Logical. Whether to exclude zero-count regions before summarization. Default is TRUE.}
 
