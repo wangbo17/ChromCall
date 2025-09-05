@@ -13,12 +13,14 @@ test_region_counts(x, trim_blacklist = TRUE)
 }
 \value{
 A modified \link{RangedSummarizedExperiment} object with additional assays:
-\code{logFC}, \code{lambda_t}, \code{p_value}, \code{p_adj}, \code{score}, and a rowData column \code{modification_factor}.
+\code{logFC}, \code{lambda_t}, \code{p_value}, \code{p_adj}, \code{score}, \code{z_pois},
+and a rowData column \code{modification_factor}.
 }
 \description{
 Conduct Poisson-based statistical tests on read counts across genomic regions
 in a chromcall \link{RangedSummarizedExperiment} object. Adds assays for logFC,
-background lambda, p-values, adjusted p-values, and enrichment score.
+background lambda, p-values, adjusted p-values, enrichment score, and a
+Poisson Z-score.
 }
 \examples{
 # See ?build_chromcall_sample for how to construct a sample
@@ -44,6 +46,7 @@ head(SummarizedExperiment::assay(result, "counts"))
 head(SummarizedExperiment::assay(result, "lambda_t"))
 head(SummarizedExperiment::assay(result, "p_adj"))
 head(SummarizedExperiment::assay(result, "score"))
+head(SummarizedExperiment::assay(result, "z_pois"))
 head(SummarizedExperiment::rowData(result)$expression)
 SummarizedExperiment::colData(result)          # Experiment metadata (e.g. lambda_g)
 head(SummarizedExperiment::rowData(result))    # Region-level info (e.g. modification_factor)
