@@ -73,6 +73,8 @@ write_experiment_results <- function(x, experiment_name, file, alpha = 1e-5) {
     SummarizedExperiment::assays(x)$p_value[, experiment_name]
   GenomicRanges::mcols(gr)$padj <-
     SummarizedExperiment::assays(x)$p_adj[, experiment_name]
+  GenomicRanges::mcols(gr)$z_pois <-
+    SummarizedExperiment::assays(x)$z_pois[, experiment_name]
 
   GenomicRanges::mcols(gr)$significant <- factor(
     ifelse(SummarizedExperiment::assays(x)$p_adj[, experiment_name] <= alpha, "sig", "ns"),
@@ -86,7 +88,7 @@ write_experiment_results <- function(x, experiment_name, file, alpha = 1e-5) {
   # Define columns to export
   base_cols <- c(
     "seqnames", "start", "end", "width",
-    "counts_control", "counts_experiment", "logFC", "score",
+    "counts_control", "counts_experiment", "logFC", "score", "z_pois",
     "modification_factor", "test_lambda", "pvalue", "padj"
   )
 

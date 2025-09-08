@@ -95,11 +95,12 @@ write_comparison_results <- function(x, file) {
     ordered_cols <- c(
       base_cols,
       sample1,
-      unlist(lapply(exp_ordered, function(e) paste0(sample1_prefix, "_", e, c("_padj", "_class", "_score")))),
+      unlist(lapply(exp_ordered, function(e) paste0(sample1_prefix, "_", e, c("_padj", "_class", "_score", "_z")))),
       sample2,
-      unlist(lapply(exp_ordered, function(e) paste0(sample2_prefix, "_", e, c("_padj", "_class", "_score")))),
+      unlist(lapply(exp_ordered, function(e) paste0(sample2_prefix, "_", e, c("_padj", "_class", "_score", "_z")))),
       "log2FC_expression",
-      paste0(exp_ordered, "_DeltaScore")
+      paste0(exp_ordered, "_DeltaScore"),
+      paste0(exp_ordered, "_DeltaZ")
     )
 
     ordered_cols <- intersect(ordered_cols, names(df))

@@ -89,19 +89,25 @@ compare_samples <- function(x, y, experiments = NULL, threshold = 0.05) {
   for (i in 1:2) {
     s <- if (i == 1) x else y
     s_name <- sample_names[i]
-
     if ("expression" %in% names(SummarizedExperiment::rowData(s))) {
       GenomicRanges::mcols(output)[[paste0(s_name, "_expression")]] <-
         SummarizedExperiment::rowData(s)$expression
     }
+  }
+
+  for (i in 1:2) {
+    s <- if (i == 1) x else y
+    s_name <- sample_names[i]
 
     for (exp in experiments) {
       padj <- SummarizedExperiment::assay(s, "p_adj")[, exp]
       enrichment <- SummarizedExperiment::assay(s, "score")[, exp]
+      z_vals <- SummarizedExperiment::assay(s, "z_pois")[, exp]
 
-      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_padj")]] <- padj
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_padj")]]  <- padj
       GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_class")]] <- as.numeric(padj <= threshold)
       GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_score")]] <- enrichment
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_z")]]     <- z_vals
     }
   }
 
@@ -118,6 +124,10 @@ compare_samples <- function(x, y, experiments = NULL, threshold = 0.05) {
     score_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_score")]]
     score_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_score")]]
     GenomicRanges::mcols(output)[[paste0(exp, "_DeltaScore")]] <- score_y - score_x
+
+    z_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_z")]]
+    z_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_z")]]
+    GenomicRanges::mcols(output)[[paste0(exp, "_DeltaZ")]] <- z_y - z_x
   }
 
   return(output)
