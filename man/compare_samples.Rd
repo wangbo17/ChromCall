@@ -19,8 +19,9 @@ If not specified, compares all shared experiments.}
 \value{
 A \code{\link{GRanges}} object containing per-region comparison results, including:
 \itemize{
-\item Per-sample adjusted p-values, class (significance), and enrichment scores (counts / expected)
-\item Delta scores for each experiment (score_y - score_x)
+\item Per-sample adjusted p-values (\verb{_padj}), significance class (\verb{_class}),
+enrichment scores (\verb{_enrichment_score}), and z-scores (\verb{_z_score})
+\item Delta metrics for each experiment: \verb{<exp>_DeltaEnrichment} and \verb{<exp>_DeltaZscore}
 \item Optional: expression values and \code{log2FC_expression} if available in both samples
 }
 }

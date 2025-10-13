@@ -86,23 +86,38 @@ write_comparison_results <- function(x, file) {
     sample1_prefix <- sub("_expression$", "", sample1)
     sample2_prefix <- sub("_expression$", "", sample2)
 
+    # helper to collect per-experiment metric columns for a given sample prefix
     get_columns <- function(prefix) {
-      grep(paste0("^", prefix, "_.*_(padj|class|score)$"), names(df), value = TRUE)
+      grep(
+        paste0("^", prefix, "_.*_(padj|class|enrichment_score|z_score)$"),
+        names(df),
+        value = TRUE
+      )
     }
 
-    exp_ordered <- unique(sub(".*_(.*?)_(padj|class|score)$", "\\1", get_columns(sample1_prefix)))
+    exp_ordered <- unique(sub(".*_(.*?)_(padj|class|enrichment_score|z_score)$", "\\1",
+                              get_columns(sample1_prefix)))
 
     ordered_cols <- c(
       base_cols,
       sample1,
-      unlist(lapply(exp_ordered, function(e) paste0(sample1_prefix, "_", e, c("_padj", "_class", "_score", "_z")))),
+      unlist(lapply(
+        exp_ordered,
+        function(e) paste0(sample1_prefix, "_", e,
+                           c("_padj", "_class", "_enrichment_score", "_z_score"))
+      )),
       sample2,
-      unlist(lapply(exp_ordered, function(e) paste0(sample2_prefix, "_", e, c("_padj", "_class", "_score", "_z")))),
+      unlist(lapply(
+        exp_ordered,
+        function(e) paste0(sample2_prefix, "_", e,
+                           c("_padj", "_class", "_enrichment_score", "_z_score"))
+      )),
       "log2FC_expression",
-      paste0(exp_ordered, "_DeltaScore"),
-      paste0(exp_ordered, "_DeltaZ")
+      paste0(exp_ordered, "_DeltaEnrichment"),
+      paste0(exp_ordered, "_DeltaZscore")
     )
 
+    # keep order for found columns; append any extras at the end
     ordered_cols <- intersect(ordered_cols, names(df))
     df <- df[, c(ordered_cols, setdiff(names(df), ordered_cols))]
 

@@ -14,8 +14,9 @@
 #' @param threshold The adjusted p-value significance threshold (default: 0.05)
 #'
 #' @return A [`GRanges`] object containing per-region comparison results, including:
-#' - Per-sample adjusted p-values, class (significance), and enrichment scores (counts / expected)
-#' - Delta scores for each experiment (score_y - score_x)
+#' - Per-sample adjusted p-values (`_padj`), significance class (`_class`),
+#'   enrichment scores (`_enrichment_score`), and z-scores (`_z_score`)
+#' - Delta metrics for each experiment: `<exp>_DeltaEnrichment` and `<exp>_DeltaZscore`
 #' - Optional: expression values and `log2FC_expression` if available in both samples
 #'
 #' @examples
@@ -101,13 +102,13 @@ compare_samples <- function(x, y, experiments = NULL, threshold = 0.05) {
 
     for (exp in experiments) {
       padj <- SummarizedExperiment::assay(s, "p_adj")[, exp]
-      enrichment <- SummarizedExperiment::assay(s, "score")[, exp]
-      z_vals <- SummarizedExperiment::assay(s, "z_pois")[, exp]
+      enrich <- SummarizedExperiment::assay(s, "score")[, exp]   # observed/expected
+      z_vals <- SummarizedExperiment::assay(s, "z_pois")[, exp]  # z-score from model
 
-      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_padj")]]  <- padj
-      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_class")]] <- as.numeric(padj <= threshold)
-      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_score")]] <- enrichment
-      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_z")]]     <- z_vals
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_padj")]]   <- padj
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_class")]]  <- as.numeric(padj <= threshold)
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_enrichment_score")]] <- enrich
+      GenomicRanges::mcols(output)[[paste0(s_name, "_", exp, "_z_score")]]          <- z_vals
     }
   }
 
@@ -121,13 +122,13 @@ compare_samples <- function(x, y, experiments = NULL, threshold = 0.05) {
   }
 
   for (exp in experiments) {
-    score_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_score")]]
-    score_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_score")]]
-    GenomicRanges::mcols(output)[[paste0(exp, "_DeltaScore")]] <- score_y - score_x
+    es_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_enrichment_score")]]
+    es_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_enrichment_score")]]
+    GenomicRanges::mcols(output)[[paste0(exp, "_DeltaEnrichment")]] <- es_y - es_x
 
-    z_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_z")]]
-    z_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_z")]]
-    GenomicRanges::mcols(output)[[paste0(exp, "_DeltaZ")]] <- z_y - z_x
+    z_x <- GenomicRanges::mcols(output)[[paste0(sample_names[1], "_", exp, "_z_score")]]
+    z_y <- GenomicRanges::mcols(output)[[paste0(sample_names[2], "_", exp, "_z_score")]]
+    GenomicRanges::mcols(output)[[paste0(exp, "_DeltaZscore")]] <- z_y - z_x
   }
 
   return(output)
