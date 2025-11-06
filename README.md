@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/R-4.3.2+-blue" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
-  <img src="https://img.shields.io/badge/Status-Beta-orange" />
+  <img src="https://img.shields.io/badge/Version-1.0.0-orange" />
   <img src="https://img.shields.io/github/last-commit/wangbo17/ChromCall" />
 </p>
 
