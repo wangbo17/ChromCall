@@ -81,6 +81,7 @@ z_i^{(j)} = \frac{y_i^{(j)} - \lambda_{t,i}^{(j)}}{\sqrt{\lambda_{t,i}^{(j)}}}
 $$
 
 Multiple testing correction is performed using the **Benjamini–Hochberg (FDR)** procedure.  
+
 Together, these metrics provide complementary measures of enrichment strength, effect size, and statistical confidence.
 
 ### Implementation and Data Structure
