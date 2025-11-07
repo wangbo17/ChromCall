@@ -27,7 +27,8 @@ ChromCall implements a **Poisson-based background model** that integrates genome
 
 ## 🧠 Method Overview
 
-ChromCall models read counts as Poisson-distributed events, suitable for sparse and independent fragment occurrences across fixed genomic windows.  
+ChromCall models read counts as Poisson-distributed events, suitable for sparse and independent fragment occurrences across fixed genomic windows. 
+
 Read counts within each region are assumed to arise from independent sampling with a constant underlying rate, forming a tractable probabilistic basis for background estimation and enrichment testing.
 
 ### Background Estimation and Local Modulation
