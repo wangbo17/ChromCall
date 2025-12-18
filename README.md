@@ -1,6 +1,5 @@
 # ChromCall
-*An R package for region-level chromatin enrichment analysis of epigenomic data*
-
+*Assigning chromatin status to predefined genomic regions from epigenomic profiling data*
 
 <p align="center">
   <img src="https://img.shields.io/badge/R-4.3.2+-blue" />
@@ -9,151 +8,188 @@
   <img src="https://img.shields.io/github/last-commit/wangbo17/ChromCall" />
 </p>
 
+---
+
 ## 🔍 Overview
 
-**ChromCall** is an R package for *region-level chromatin enrichment analysis* of epigenomic data such as **ChIP-seq**, **CUT&RUN**, **CUT&Tag**, and **ATAC-seq**. It provides a **transparent**, **reproducible**, and **statistically principled** framework to quantify enrichment across predefined genomic regions (e.g. promoters, enhancers, or transcription factor binding sites).  
+**ChromCall** is an R package for **region-based chromatin enrichment analysis** of epigenomic profiling data, including **ChIP-seq, CUT&RUN, CUT&Tag, and ATAC-seq**. It provides a transparent, statistically principled framework to **quantify enrichment at predefined genomic regions** (e.g. promoters or enhancers), enabling region-matched comparisons across samples and experiments without relying on data-dependent peak boundaries.
 
-ChromCall implements a **Poisson-based background model** that integrates genome-wide signal estimation with local modulation derived from matched control data. This unified approach enables consistent and interpretable quantification of chromatin enrichment both within and across experiments.
+---
 
 ## 🚀 Key Features
 
-- **Region-centered analysis:** Quantify enrichment within predefined genomic windows (e.g. promoters, enhancers).  
-- **Transparent statistical model:** Uses a Poisson-based framework with genome-wide background and control-derived local modulation.  
-- **Reproducible quantification:** Provides comparable enrichment estimates across experiments.  
-- **Comprehensive outputs:** Effect sizes, FDR-adjusted *p*-values, enrichment scores, and Poisson *z*-scores.  
-- **Differential comparison:** Supports pairwise delta-based metrics to assess chromatin pattern changes between samples.  
-- **Bioconductor integration:** Fully compatible with GRanges, SummarizedExperiment, and downstream workflows.  
-- **Modular and extensible:** Designed for future extension to additional statistical models and multi-sample designs.
+- **Region-centric analysis**  
+  Quantifies chromatin enrichment directly within predefined genomic windows, enabling consistent, region-matched comparisons across samples and experiments.
 
-## 🧠 Method Overview
+- **Transparent statistical framework**  
+  Employs a Poisson-based background model incorporating:
+  - experiment-specific genome-wide background estimation  
+  - region-specific, control-derived modulation factors
 
-ChromCall models read counts as Poisson-distributed events, suitable for sparse and independent fragment occurrences across fixed genomic windows. 
+- **Control-aware enrichment testing**  
+  Explicitly integrates matched control experiments to account for both technical background and local biological variability.
 
-Read counts within each region are assumed to arise from independent sampling with a constant underlying rate, forming a tractable probabilistic basis for background estimation and enrichment testing.
+- **Multiple complementary metrics**  
+  For each region and experiment, ChromCall reports:
+  - FDR-adjusted p-values  
+  - enrichment score (log₂ observed / expected)  
+  - Poisson z-score  
+  - binary chromatin status (present / absent)
 
-### Background Estimation and Local Modulation
+- **Multi-experiment and multi-sample support**  
+  Supports joint analysis of multiple chromatin marks and pairwise comparisons between samples within a unified framework.
 
-1. **Global background estimation**  
+- **Optional expression integration**  
+  Region-level gene expression values (e.g. TSS-associated expression) can be incorporated to enable integrated chromatin–transcription analyses.
 
-The genome-wide background rate \( \lambda_g \) is estimated as the mean read count per non-blacklisted genomic tile:
+---
+
+## 🧠 Statistical Model Overview
+
+ChromCall models read counts as **Poisson-distributed events**, an appropriate approximation for sparse and independent fragment occurrences across fixed genomic windows. After accounting for genome-wide background signal and local, control-derived modulation, this framework enables transparent and analytically tractable region-level inference.
+
+### Background Estimation
+
+For each experiment, a genome-wide background rate \( \lambda_g \) is estimated as the mean read count per non-blacklisted genomic tile:
 
 $$
 \lambda_g = \frac{1}{N} \sum_{i=1}^{N} y_i
 $$
 
-Zero-count tiles are retained to avoid upward bias in sparse datasets.
+where \( y_i \) denotes the read count in the *i*th tile and *N* is the total number of non-blacklisted tiles.  
+Zero-count tiles are retained by default to avoid upward bias in sparse datasets and to ensure that \( \lambda_g \) reflects global background signal rather than local enrichment.
 
-2. **Control-based modulation**  
+### Control-based Local Modulation
 
-Local variability is corrected using a control-derived modulation factor:
+To account for region-specific biological variability, ChromCall derives a modulation factor from the matched control experiment:
 
 $$
-m_i = \max(1, \frac{y_i^{(ctrl)}}{\lambda_g^{(ctrl)}})
+m_i = \max\left(1, \frac{y_i^{(\mathrm{ctrl})}}{\lambda_g^{(\mathrm{ctrl})}}\right)
 $$
 
-The expected signal for each region *i* in experiment *j* is then:
+The expected signal for region *i* in experiment *j* is then defined as:
 
 $$
 \lambda_{t,i}^{(j)} = m_i \times \lambda_g^{(j)}
 $$
 
-This integrates both global sequencing depth and local control variation into a unified, interpretable background model.
+This formulation integrates global sequencing depth with local control variation into a unified and interpretable background model, while preventing deflation in regions with low control signal.
 
-### Statistical Testing and Enrichment Scoring
+### Statistical Testing and Effect Sizes
 
-ChromCall performs one-sided Poisson tests to evaluate whether observed counts significantly exceed the expected signal:
-
-$$
-p_i^{(j)} = P(Y \ge y_i^{(j)} \mid Y \sim Pois(\lambda_{t,i}^{(j)}))
-$$
-
-Additional quantitative metrics include:
-
-- **Enrichment score:**  
+ChromCall evaluates region-level enrichment using a one-sided Poisson test:
 
 $$
-s_i^{(j)} = \log_2\left( \frac{y_i^{(j)} + \epsilon}{\lambda_{t,i}^{(j)} + \epsilon} \right)
+p_i^{(j)} = P\left(Y \ge y_i^{(j)} \mid Y \sim \mathrm{Pois}(\lambda_{t,i}^{(j)})\right)
 $$
 
-- **Poisson z-score:**  
+Multiple testing correction is applied across all regions using the **Benjamini–Hochberg false discovery rate (FDR)** procedure.
+
+In addition to significance testing, ChromCall reports complementary effect-size metrics:
+
+- **Enrichment score**
+
+$$
+s_i^{(j)} = \log_2\left(\frac{y_i^{(j)} + \epsilon}{\lambda_{t,i}^{(j)} + \epsilon}\right)
+$$
+
+- **Poisson z-score**
 
 $$
 z_i^{(j)} = \frac{y_i^{(j)} - \lambda_{t,i}^{(j)}}{\sqrt{\lambda_{t,i}^{(j)}}}
 $$
 
-Multiple testing correction is performed using the **Benjamini–Hochberg (FDR)** procedure.  
-
 Together, these metrics provide complementary measures of enrichment strength, effect size, and statistical confidence.
 
-### Implementation and Data Structure
+---
+## 🧬 Implementation and Data Structures
 
-ChromCall is implemented in **R** and builds upon the **Bioconductor** framework:
+ChromCall is implemented in **R** and builds upon the **Bioconductor** ecosystem, ensuring interoperability with standard genomic data structures and downstream analysis workflows:
 
-- **GRanges** for genomic intervals  
-- **SummarizedExperiment** for structured assay outputs  
-- **GenomicAlignments** for BAM import  
-- **GenomicRanges** and **Seqinfo** for annotation management  
+- `GRanges` for representing genomic intervals  
+- `SummarizedExperiment` for storing structured assay outputs and metadata  
+- `GenomicAlignments` for importing aligned sequencing reads from BAM files  
+- `GenomeInfoDb` and `Seqinfo` for genome annotation and consistency checks  
 
-Each processed sample is returned as a `SummarizedExperiment` containing:
+Each processed sample is returned as a `SummarizedExperiment` object containing:
 
-- Raw counts  
-- Background estimates (\(\lambda_g\), \(\lambda_t\))  
+- raw region-level read counts  
+- genome-wide and locally adjusted background estimates (\( \lambda_g \), \( \lambda_t \))  
 - p-values and FDR-adjusted p-values  
-- Enrichment scores and Poisson z-scores  
+- enrichment scores and Poisson z-scores  
 
-ChromCall also supports pairwise comparison outputs, including **Δ enrichment** and **Δ z-score** metrics for comparative chromatin analysis.
+Pairwise sample comparisons generate region-level **Δ enrichment** and **Δ z-score** metrics, enabling direct comparative analysis of chromatin states across biological conditions.
 
-This modular architecture facilitates future extensions to additional statistical models or multi-sample designs.
+---
 
 ## 📦 Installation
 
-```r
-# Install development version from GitHub
-if (!requireNamespace("remotes", quietly = TRUE))
-    install.packages("remotes")
+ChromCall is available as a development version on GitHub and can be installed using `remotes`:
 
-remotes::install_github("wangbo17/ChromCall")
+```r
+# install.packages("remotes")
+remotes::install_github("GliomaGenomics/ChromCall")
 ```
 
-## 🧬 Example Usage
+---
+
+## 🧪 Basic Workflow
+
+### Build a ChromCall sample
 
 ```r
-library(ChromCall)
-
-# Input files
-bam_exp <- "H3K27me3_treated.bam"
-bam_ctrl <- "H3K27me3_input.bam"
-regions  <- "promoters.bed"
-
-# Run ChromCall
-result <- run_chromcall(
-    bam_exp = bam_exp,
-    bam_ctrl = bam_ctrl,
-    regions = regions,
-    blacklist = "blacklist.bed"
+sample <- build_chromcall_sample(
+  sample_name   = "sampleA",
+  experiments   = list(
+    H3K27me3 = "h3k27me3.bam",
+    H3K4me3  = "h3k4me3.bam",
+    Control  = "control.bam"
+  ),
+  control_name   = "Control",
+  genome_file    = "genome.txt",
+  region_file    = "promoters.bed",
+  window_size    = 2000,
+  blacklist_file = "blacklist.bed",
+  expression_file = "expression_tss.bed"
 )
-
-# Access results
-assay(result, "enrichment_score")
-metadata(result)
 ```
+
+### Perform region-level enrichment testing
+
+```r
+result <- test_region_counts(sample)
+```
+
+### Compare two samples
+
+```r
+comparison <- compare_samples(resultA, resultB, threshold = 0.05)
+```
+
+### Export results
+
+```r
+write_experiment_results(result, "H3K4me3", "results.tsv")
+write_comparison_results(comparison, "comparison.tsv")
+```
+
+---
 
 ## 📈 Outputs
 
-| Output metric            | Description                                   |
-| ------------------------ | --------------------------------------------- |
-| `count`                  | Raw read count per region                     |
-| `lambda_g`               | Genome-wide background rate                   |
-| `lambda_t`               | Locally adjusted expected signal              |
-| `pval` / `padj`          | Poisson test p-values and FDR-adjusted values |
-| `score`                  | log₂(Observed/Expected) enrichment            |
-| `z_pois`                 | Poisson z-score                               |
-| `delta_score`, `delta_z` | Pairwise comparison metrics                   |
+| Metric                           | Description                                   |
+| -------------------------------- | --------------------------------------------- |
+| `counts`                         | Raw read count per region                     |
+| `lambda_g`                       | Genome-wide background rate                   |
+| `lambda_t`                       | Locally adjusted expected signal              |
+| `p_value`, `p_adj`               | Poisson test p-values and FDR-adjusted values |
+| `score`                          | log₂(Observed / Expected) enrichment          |
+| `z_pois`                         | Poisson z-score                               |
+| `DeltaEnrichment`, `DeltaZscore` | Pairwise comparison metrics                   |
 
-## 📄 License
-
-MIT License © 2025 Bo Wang
+---
 
 ## 💡 Contact
 
-For questions, issues, or feature requests, please open a [GitHub issue](https://github.com/wangbo17/ChromCall/issues).
+For questions, issues, or feature requests, please open a 👉 [GitHub issue](https://github.com/wangbo17/ChromCall/issues)
+
