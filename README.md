@@ -50,14 +50,14 @@ ChromCall models read counts as **Poisson-distributed events**, an appropriate a
 
 ### Background Estimation
 
-For each experiment, a genome-wide background rate \( \lambda_g \) is estimated as the mean read count per non-blacklisted genomic tile:
+For each experiment, a genome-wide background rate ($\lambda_g$) is estimated as the mean read count per non-blacklisted genomic tile:
 
 $$
 \lambda_g = \frac{1}{N} \sum_{i=1}^{N} y_i
 $$
 
-where \( y_i \) denotes the read count in the *i*th tile and *N* is the total number of non-blacklisted tiles.  
-Zero-count tiles are retained by default to avoid upward bias in sparse datasets and to ensure that \( \lambda_g \) reflects global background signal rather than local enrichment.
+where ($y_i$) denotes the read count in the *i*th tile and *N* is the total number of non-blacklisted tiles.  
+Zero-count tiles are retained by default to avoid upward bias in sparse datasets and to ensure that ($\lambda_g$) reflects global background signal rather than local enrichment.
 
 ### Control-based Local Modulation
 
@@ -114,7 +114,7 @@ ChromCall is implemented in **R** and builds upon the **Bioconductor** ecosystem
 Each processed sample is returned as a `SummarizedExperiment` object containing:
 
 - raw region-level read counts  
-- genome-wide and locally adjusted background estimates (\( \lambda_g \), \( \lambda_t \))  
+- genome-wide and locally adjusted background estimates (($\lambda_g$), ($\lambda_t$))  
 - p-values and FDR-adjusted p-values  
 - enrichment scores and Poisson z-scores  
 
