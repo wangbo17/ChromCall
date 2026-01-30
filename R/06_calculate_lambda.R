@@ -7,6 +7,7 @@
 #' @param x A [GenomicRanges::GRanges] object containing count values and optional metadata.
 #' @param counts_col Character. Column name containing count values. Default is `"counts"`.
 #' @param blacklist_col Character (optional). Logical column indicating blacklisted regions.
+#'   If `NULL`, blacklist filtering is skipped.
 #' @param rm_zero Logical. Whether to exclude zero-count regions before summarization. Default is TRUE.
 #' @param summary_fun Function. Summary function to apply (e.g., [mean()], [median()]). Default is [mean()].
 #'
@@ -21,7 +22,7 @@
 #'   blacklist = c(FALSE, FALSE, TRUE)
 #' )
 #'
-#' # No blacklist filtering: 'blacklist_col' not specified
+#' # No blacklist filtering: blacklist_col not provided / NULL
 #' calculate_lambda(gr)
 #'
 #' # With blacklist filtering: exclude third region
@@ -37,14 +38,17 @@
 calculate_lambda <- function(
     x,
     counts_col = "counts",
-    blacklist_col,
+    blacklist_col = NULL,
     rm_zero = TRUE,
     summary_fun = mean
 ) {
 
   counts <- S4Vectors::mcols(x)[[counts_col]]
 
-  if (!missing(blacklist_col)) {
+  if (!is.null(blacklist_col) && is.character(blacklist_col) && length(blacklist_col) == 1) {
+    if (!(blacklist_col %in% names(S4Vectors::mcols(x)))) {
+      stop("blacklist_col '", blacklist_col, "' not found in mcols(x).")
+    }
     counts <- counts[!S4Vectors::mcols(x)[[blacklist_col]]]
   }
 

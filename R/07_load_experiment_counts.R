@@ -71,6 +71,11 @@ load_experiment_counts <- function(file, paired, genome_tiles, regions) {
     rm_zero       = FALSE
   )
 
+  # optional safety: ensure lambda_g is finite and non-negative
+  if (!is.finite(lambda_g) || lambda_g < 0) {
+    stop("Computed lambda_g is not finite or is negative. Please check input BAM and genome_tiles.")
+  }
+
   list(
     counts   = as.integer(region_counts_vec),
     lambda_g = lambda_g

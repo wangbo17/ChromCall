@@ -2,12 +2,12 @@
 % Please edit documentation in R/08_load_expression.R
 \name{load_expression}
 \alias{load_expression}
-\title{Load Expression Data from TSS BED File}
+\title{Load Expression Data from TSS BED-like File}
 \usage{
 load_expression(file, genome = NULL)
 }
 \arguments{
-\item{file}{Path to a BED-format file with at least 3 columns: chromosome, TSS, and expression.}
+\item{file}{Path to a tab-delimited file with at least 3 columns: chromosome, TSS, and expression.}
 
 \item{genome}{Optional \link[GenomeInfoDb:Seqinfo-class]{GenomeInfoDb::Seqinfo} object to restrict chromosomes and assign seqinfo.}
 }
@@ -15,8 +15,11 @@ load_expression(file, genome = NULL)
 A \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} object with 1-bp ranges and a metadata column \code{expression}.
 }
 \description{
-Load a BED-format file containing transcription start site (TSS) coordinates and expression values,
+Load a tab-delimited file containing transcription start site (TSS) coordinates and expression values,
 and convert it into a \link[GenomicRanges:GRanges-class]{GenomicRanges::GRanges} object with an "expression" metadata column.
+
+\strong{Coordinate convention:} This function assumes the input \code{tss} column is \strong{1-based}.
+This matches the current ChromCall window files used in the project.
 }
 \examples{
 expr_file <- system.file("extdata", "expression_tss.bed", package = "chromcall")

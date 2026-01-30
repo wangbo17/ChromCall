@@ -7,7 +7,7 @@
 calculate_lambda(
   x,
   counts_col = "counts",
-  blacklist_col,
+  blacklist_col = NULL,
   rm_zero = TRUE,
   summary_fun = mean
 )
@@ -17,7 +17,8 @@ calculate_lambda(
 
 \item{counts_col}{Character. Column name containing count values. Default is \code{"counts"}.}
 
-\item{blacklist_col}{Character (optional). Logical column indicating blacklisted regions.}
+\item{blacklist_col}{Character (optional). Logical column indicating blacklisted regions.
+If \code{NULL}, blacklist filtering is skipped.}
 
 \item{rm_zero}{Logical. Whether to exclude zero-count regions before summarization. Default is TRUE.}
 
@@ -39,7 +40,7 @@ gr <- GenomicRanges::GRanges(
   blacklist = c(FALSE, FALSE, TRUE)
 )
 
-# No blacklist filtering: 'blacklist_col' not specified
+# No blacklist filtering: blacklist_col not provided / NULL
 calculate_lambda(gr)
 
 # With blacklist filtering: exclude third region
